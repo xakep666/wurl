@@ -25,7 +25,7 @@ So I decided to write own console websocket client...
 
 ### TODOs for v1
 - [ ] Document all packages
-- [ ] Flag to show handshake response
+- [x] Flag to show handshake response
 - [ ] Store and load options from file
 - [ ] Warning about binary messages before displaying (cURL-like)
 - [ ] Ability to specify output for binary and text messages

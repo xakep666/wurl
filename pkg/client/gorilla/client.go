@@ -3,7 +3,6 @@ package gorilla
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -34,54 +33,61 @@ func setupDialer(opts *config.Options) *websocket.Dialer {
 	}
 }
 
+func (c *Client) prepareConnection() {
+	c.conn.SetPingHandler(func(appData string) error {
+		if c.opts.RespondPings {
+			c.log.Debugf("ping received from %s, payload %s", c.conn.RemoteAddr(), appData)
+			return c.conn.WriteMessage(websocket.PingMessage, nil)
+		}
+		return nil
+	})
+	c.conn.SetPongHandler(func(appData string) error {
+		c.log.Debugf("pong received from %s, payload %s", c.conn.RemoteAddr(), appData)
+		return nil
+	})
+}
+
+func (c *Client) periodicPinger() {
+	ticker := time.NewTicker(c.opts.PingPeriod)
+	defer ticker.Stop()
+	for {
+		if err := c.Ping(nil); err != nil {
+			c.log.WithError(err).Error("websocket ping failed")
+			return
+		}
+
+		<-ticker.C
+	}
+}
+
 func NewClient(url string, opts *config.Options) (client.Client, error) {
 	dialer := setupDialer(opts)
 	conn, resp, err := dialer.Dial(url, opts.AdditionalHeaders)
 	switch err {
 	case nil:
-		// pass
-	case websocket.ErrBadHandshake:
-		respBody, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("bad handshake: can`t read body: %v", err)
+		if printErr := client.WriteHandshakeResponse(resp, opts); printErr != nil {
+			return nil, printErr
 		}
-		return nil, fmt.Errorf("bad handshake: status %s, body %s", resp.Status, respBody)
+	case websocket.ErrBadHandshake:
+		if printErr := client.WriteHandshakeResponse(resp, opts); printErr != nil {
+			return nil, printErr
+		}
+		return nil, fmt.Errorf("bad handshake: status %s", resp.Status)
 	default:
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	log := logrus.StandardLogger().WithField("client", "gorilla")
 
-	conn.SetPingHandler(func(appData string) error {
-		if opts.RespondPings {
-			log.Debugf("ping received from %s, payload %s", conn.RemoteAddr(), appData)
-			return conn.WriteMessage(websocket.PingMessage, nil)
-		}
-		return nil
-	})
-	conn.SetPongHandler(func(appData string) error {
-		log.Debugf("pong received from %s, payload %s", conn.RemoteAddr(), appData)
-		return nil
-	})
+	ret := &Client{conn: conn, opts: opts, log: log}
+
+	ret.prepareConnection()
 
 	if opts.PingPeriod > 0 {
-		go func() {
-			ticker := time.NewTicker(opts.PingPeriod)
-			defer ticker.Stop()
-			for {
-				log.Debugf("sending ping message to %s", conn.RemoteAddr())
-				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-					log.WithError(err).Error("websocket ping failed")
-					return
-				}
-
-				<-ticker.C
-			}
-		}()
+		go ret.periodicPinger()
 	}
 
-	return &Client{conn: conn, opts: opts, log: log}, nil
+	return ret, nil
 }
 
 func (c *Client) Close() error {

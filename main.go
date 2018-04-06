@@ -1,4 +1,4 @@
-package wurl
+package main
 
 import (
 	"fmt"
@@ -25,6 +25,7 @@ func main() {
 			&flags.PingPeriodFlag,
 			&flags.IgnorePingsFlag,
 			&flags.TraceFlag,
+			&flags.ShowHandshakeResponseFlag,
 		},
 		Commands: []*cli.Command{
 			&commands.ReadCommand,

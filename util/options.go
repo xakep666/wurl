@@ -61,6 +61,7 @@ func OptionsFromFlags(ctx *cli.Context) (ret *config.Options, err error) {
 		return
 	}
 	ret.TraceTo = ctx.String(flags.TraceFlag.Name)
+	ret.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
 
 	return
 }

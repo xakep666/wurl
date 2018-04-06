@@ -24,4 +24,7 @@ type Options struct {
 	// If TraceTo is "-" debug messages will be written to stdout.
 	// In other cases debug messages will be written to file.
 	TraceTo string
+
+	// ShowHandshakeResponse allows to include handshake response (headers+body) to output
+	ShowHandshakeResponse bool
 }

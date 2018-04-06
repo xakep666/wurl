@@ -33,3 +33,9 @@ var TraceFlag = cli.StringFlag{
 	Name:  "trace",
 	Usage: "Write a debug trace to FILE (\"-\" for STDOUT)",
 }
+
+var ShowHandshakeResponseFlag = cli.BoolFlag{
+	Name:    "include",
+	Aliases: []string{"i"},
+	Usage:   "Include handshake response (headers and body) to output",
+}
