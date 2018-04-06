@@ -1,4 +1,4 @@
-package main
+package wurl
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
-	"github.com/xakep666/wurl/cmd/wurl/commands"
-	"github.com/xakep666/wurl/cmd/wurl/flags"
-	"github.com/xakep666/wurl/cmd/wurl/util"
+	"github.com/xakep666/wurl/commands"
+	"github.com/xakep666/wurl/flags"
+	"github.com/xakep666/wurl/util"
 	"gopkg.in/urfave/cli.v2"
 )
 

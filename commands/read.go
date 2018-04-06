@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/xakep666/wurl/cmd/wurl/util"
+	"github.com/xakep666/wurl/util"
 	"gopkg.in/urfave/cli.v2"
 )
 
