@@ -1,8 +1,11 @@
 package config
 
 import (
+	"io"
 	"net/http"
 	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
 // Options describes global wurl options
@@ -27,4 +30,13 @@ type Options struct {
 
 	// ShowHandshakeResponse allows to include handshake response (headers+body) to output
 	ShowHandshakeResponse bool
+}
+
+func (opts *Options) ToTOML(w io.Writer) error {
+	return toml.NewEncoder(w).Encode(opts)
+}
+
+func FromTOML(r io.Reader, opts *Options) error {
+	_, err := toml.DecodeReader(r, opts)
+	return err
 }

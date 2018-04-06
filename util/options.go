@@ -51,19 +51,73 @@ func processHeadersFlag(ctx *cli.Context) (ret http.Header, err error) {
 	return
 }
 
-func OptionsFromFlags(ctx *cli.Context) (ret *config.Options, err error) {
-	ret = &config.Options{}
-	ret.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
-	ret.PingPeriod = ctx.Duration(flags.PingPeriodFlag.Name)
-	ret.RespondPings = !ctx.Bool(flags.IgnorePingsFlag.Name)
-	ret.AdditionalHeaders, err = processHeadersFlag(ctx)
-	if err != nil {
-		return
+func OptionsFromFlags(ctx *cli.Context, opts *config.Options) (err error) {
+	if ctx.IsSet(flags.InsecureSSLFlag.Name) {
+		opts.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
 	}
-	ret.TraceTo = ctx.String(flags.TraceFlag.Name)
-	ret.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
+
+	if ctx.IsSet(flags.PingPeriodFlag.Name) {
+		opts.PingPeriod = ctx.Duration(flags.PingPeriodFlag.Name)
+	}
+
+	if ctx.IsSet(flags.IgnorePingsFlag.Name) {
+		opts.RespondPings = !ctx.Bool(flags.IgnorePingsFlag.Name)
+	}
+
+	if ctx.IsSet(flags.HeadersFlag.Name) {
+		opts.AdditionalHeaders, err = processHeadersFlag(ctx)
+		if err != nil {
+			return
+		}
+	}
+
+	if ctx.IsSet(flags.TraceFlag.Name) {
+		opts.TraceTo = ctx.String(flags.TraceFlag.Name)
+	}
+
+	if ctx.IsSet(flags.ShowHandshakeResponseFlag.Name) {
+		opts.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
+	}
 
 	return
+}
+
+func OptionsFromTOML(ctx *cli.Context, opts *config.Options) (err error) {
+	fileName := ctx.String(flags.ReadConfigFlag.Name)
+	switch fileName {
+	case "":
+		return
+	case "-":
+		return config.FromTOML(os.Stdin, opts)
+	default:
+		var file *os.File
+		file, err = os.Open(fileName)
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		err = config.FromTOML(file, opts)
+		return
+	}
+}
+
+func OptionsToTOML(ctx *cli.Context, opts *config.Options) (err error) {
+	fileName := ctx.String(flags.SaveConfigToFlag.Name)
+	switch fileName {
+	case "":
+		return
+	case "-":
+		return opts.ToTOML(os.Stdout)
+	default:
+		var file *os.File
+		file, err = os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		err = opts.ToTOML(file)
+		return
+	}
 }
 
 func SetupLogger(ctx *cli.Context) error {

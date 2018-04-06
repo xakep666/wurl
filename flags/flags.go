@@ -39,3 +39,14 @@ var ShowHandshakeResponseFlag = cli.BoolFlag{
 	Aliases: []string{"i"},
 	Usage:   "Include handshake response (headers and body) to output",
 }
+
+var SaveConfigToFlag = cli.StringFlag{
+	Name:  "save-config",
+	Usage: "Save current options to FILE (\"-\" for STDOUT)",
+}
+
+var ReadConfigFlag = cli.StringFlag{
+	Name:    "config",
+	Aliases: []string{"K"},
+	Usage:   "Read config from TOML FILE (\"-\" for STDIN)",
+}

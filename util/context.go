@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/pkg/client/gorilla"
 	"github.com/xakep666/wurl/pkg/config"
@@ -13,11 +14,26 @@ const (
 )
 
 func SetupOptions(ctx *cli.Context) error {
-	opts, err := OptionsFromFlags(ctx)
+	var opts config.Options
+
+	if ctx.IsSet(flags.ReadConfigFlag.Name) {
+		if err := OptionsFromTOML(ctx, &opts); err != nil {
+			return err
+		}
+	}
+
+	err := OptionsFromFlags(ctx, &opts)
 	if err != nil {
 		return err
 	}
-	ctx.App.Metadata[optionsContextKey] = opts
+
+	if ctx.IsSet(flags.SaveConfigToFlag.Name) {
+		if err := OptionsToTOML(ctx, &opts); err != nil {
+			return err
+		}
+	}
+
+	ctx.App.Metadata[optionsContextKey] = &opts
 	return nil
 }
 

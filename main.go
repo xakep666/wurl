@@ -26,19 +26,14 @@ func main() {
 			&flags.IgnorePingsFlag,
 			&flags.TraceFlag,
 			&flags.ShowHandshakeResponseFlag,
+			&flags.ReadConfigFlag,
+			&flags.SaveConfigToFlag,
 		},
 		Commands: []*cli.Command{
 			&commands.ReadCommand,
 		},
 		Before: func(ctx *cli.Context) error {
-			if err := util.SetupOptions(ctx); err != nil {
-				return err
-			}
-			if err := util.SetupLogger(ctx); err != nil {
-				return err
-			}
-			logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
-			if err := util.SetupClientConstructor(ctx); err != nil {
+			if err := setup(ctx); err != nil {
 				return err
 			}
 			return nil
@@ -49,4 +44,18 @@ func main() {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
+}
+
+func setup(ctx *cli.Context) error {
+	if err := util.SetupOptions(ctx); err != nil {
+		return err
+	}
+	if err := util.SetupLogger(ctx); err != nil {
+		return err
+	}
+	logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
+	if err := util.SetupClientConstructor(ctx); err != nil {
+		return err
+	}
+	return nil
 }

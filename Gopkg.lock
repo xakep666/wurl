@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
+
+[[projects]]
   name = "github.com/blang/semver"
   packages = ["."]
   revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
@@ -43,6 +49,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e50b154f6196e90c7ec57c7d7a1fb12a7ec02b950d4b0e9129577ce155850c91"
+  inputs-digest = "2c1640e8aeb09e4887cf785f41c30831ac2de381920df85e3b3081207aff063c"
   solver-name = "gps-cdcl"
   solver-version = 1
