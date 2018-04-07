@@ -46,6 +46,9 @@ type Client interface {
 	// WriteJSONMessage encodes 'obj' to JSON and sends it to server
 	WriteJSONMessage(obj interface{}) error
 
+	// WriteMessageFrom sends message from given reader
+	WriteMessageFrom(reader io.Reader) error
+
 	io.Closer
 }
 

@@ -25,6 +25,14 @@ var ReadCommand = cli.Command{
 		}
 		defer cl.Close()
 
+		msg := util.GetSingleMessageReader(ctx)
+		if msg != nil {
+			defer msg.Close()
+			if err := cl.WriteMessageFrom(msg); err != nil {
+				return err
+			}
+		}
+
 		var out io.Writer = &client.BinaryCheckWriter{
 			Writer: util.MustGetOutput(ctx),
 			Opts:   util.MustGetOptions(ctx),

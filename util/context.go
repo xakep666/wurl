@@ -2,7 +2,9 @@ package util
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
@@ -15,6 +17,7 @@ const (
 	optionsContextKey           = "options"
 	clientConstructorContextKey = "client"
 	outputContextKey            = "output"
+	singleMessageContextKey     = "singlemsg"
 )
 
 func SetupOptions(ctx *cli.Context) error {
@@ -84,4 +87,29 @@ func MustGetOutput(ctx *cli.Context) io.WriteCloser {
 		panic("output not found int context")
 	}
 	return out.(io.WriteCloser)
+}
+
+func SetupSingleMessageReader(ctx *cli.Context) error {
+	opts := MustGetOptions(ctx)
+	switch {
+	case opts.MessageAfterConnect == "":
+		// pass
+	case strings.HasPrefix(opts.MessageAfterConnect, "@"):
+		file, err := os.Open(strings.TrimPrefix(opts.MessageAfterConnect, "@"))
+		if err != nil {
+			return err
+		}
+		ctx.App.Metadata[singleMessageContextKey] = file
+	default:
+		ctx.App.Metadata[singleMessageContextKey] = ioutil.NopCloser(strings.NewReader(opts.MessageAfterConnect))
+	}
+	return nil
+}
+
+func GetSingleMessageReader(ctx *cli.Context) io.ReadCloser {
+	msg, ok := ctx.App.Metadata[singleMessageContextKey]
+	if !ok {
+		return nil
+	}
+	return msg.(io.ReadCloser)
 }

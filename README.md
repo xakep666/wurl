@@ -29,7 +29,7 @@ So I decided to write own console websocket client...
 - [x] Store and load options from file
 - [x] Warning about binary messages before displaying (cURL-like)
 - [x] Ability to specify output
-- [ ] Option to send message to server before reading
+- [x] Option to send message to server before reading
 - [ ] Good description for all flags/commands
 - [ ] Bash autocomplete
 - [ ] Package to rpm, deb, for Arch (after release)

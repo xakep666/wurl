@@ -56,3 +56,9 @@ var OutputFlag = cli.StringFlag{
 	Aliases: []string{"o"},
 	Usage:   "Write to FILE instead of STDOUT (\"-\" for STDOUT explicitly)",
 }
+
+var MessageAfterConnectFlag = cli.StringFlag{
+	Name:    "data",
+	Aliases: []string{"d"},
+	Usage:   "Send a message to server after connection. Use @file notation to read from file.",
+}

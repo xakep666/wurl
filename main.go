@@ -29,6 +29,7 @@ func main() {
 			&flags.ReadConfigFlag,
 			&flags.SaveConfigToFlag,
 			&flags.OutputFlag,
+			&flags.MessageAfterConnectFlag,
 		},
 		Commands: []*cli.Command{
 			&commands.ReadCommand,
@@ -59,6 +60,9 @@ func setup(ctx *cli.Context) error {
 		return err
 	}
 	if err := util.SetupOutput(ctx); err != nil {
+		return err
+	}
+	if err := util.SetupSingleMessageReader(ctx); err != nil {
 		return err
 	}
 	return nil

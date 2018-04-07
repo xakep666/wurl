@@ -33,6 +33,11 @@ type Options struct {
 
 	// Output is an output location for messages
 	Output string
+
+	// MessageAfterConnect allows to send message to server after successful connection.
+	// If @file specified, sends file content to server.
+	// If content is UTF-8 encoded string, sends as text message. Otherwise sends as binary message.
+	MessageAfterConnect string
 }
 
 func (opts *Options) ToTOML(w io.Writer) error {

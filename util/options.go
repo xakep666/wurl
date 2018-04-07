@@ -83,6 +83,10 @@ func OptionsFromFlags(ctx *cli.Context, opts *config.Options) (err error) {
 		opts.Output = ctx.String(flags.OutputFlag.Name)
 	}
 
+	if ctx.IsSet(flags.MessageAfterConnectFlag.Name) {
+		opts.MessageAfterConnect = ctx.String(flags.MessageAfterConnectFlag.Name)
+	}
+
 	return
 }
 
