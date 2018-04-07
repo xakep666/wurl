@@ -37,6 +37,7 @@ func main() {
 		Commands: []*cli.Command{
 			&commands.ReadCommand,
 		},
+		EnableShellCompletion: true,
 	}
 
 	app.Before = func(ctx *cli.Context) error {
@@ -53,7 +54,7 @@ func main() {
 	}
 
 	app.After = func(ctx *cli.Context) error {
-		opts := reflect.ValueOf(util.MustGetOptions(ctx))
+		opts := reflect.ValueOf(util.MustGetOptions(ctx)).Elem()
 		for i := 0; i < opts.NumField(); i++ {
 			if closer, ok := opts.Field(i).Interface().(io.Closer); ok {
 				closer.Close()
