@@ -79,6 +79,10 @@ func OptionsFromFlags(ctx *cli.Context, opts *config.Options) (err error) {
 		opts.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
 	}
 
+	if ctx.IsSet(flags.OutputFlag.Name) {
+		opts.Output = ctx.String(flags.OutputFlag.Name)
+	}
+
 	return
 }
 

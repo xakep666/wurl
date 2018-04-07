@@ -28,6 +28,7 @@ func main() {
 			&flags.ShowHandshakeResponseFlag,
 			&flags.ReadConfigFlag,
 			&flags.SaveConfigToFlag,
+			&flags.OutputFlag,
 		},
 		Commands: []*cli.Command{
 			&commands.ReadCommand,
@@ -55,6 +56,9 @@ func setup(ctx *cli.Context) error {
 	}
 	logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
 	if err := util.SetupClientConstructor(ctx); err != nil {
+		return err
+	}
+	if err := util.SetupOutput(ctx); err != nil {
 		return err
 	}
 	return nil

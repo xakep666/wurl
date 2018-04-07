@@ -2,8 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"os"
+	"io"
 
+	"github.com/xakep666/wurl/flags"
+	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/util"
 	"gopkg.in/urfave/cli.v2"
 )
@@ -23,7 +25,21 @@ var ReadCommand = cli.Command{
 		}
 		defer cl.Close()
 
-		if err := cl.ReadTo(os.Stdout); err != nil {
+		var out io.Writer = &client.BinaryCheckWriter{
+			Writer: util.MustGetOutput(ctx),
+			Opts:   util.MustGetOptions(ctx),
+		}
+
+		err = cl.ReadTo(out)
+		switch err {
+		case nil:
+			// pass
+		case client.BinaryOutError:
+			fmt.Println("WARNING: binary output can mess up your terminal.")
+			fmt.Printf("Use \"--%[1]s -\" to tell %[2]s to output it to your "+
+				"terminal anyway, or consider \"--%[1]s <FILE>\" to save to a file.\n", flags.OutputFlag.Name, ctx.App.Name)
+			return nil
+		default:
 			return err
 		}
 

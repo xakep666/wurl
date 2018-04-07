@@ -30,6 +30,9 @@ type Options struct {
 
 	// ShowHandshakeResponse allows to include handshake response (headers+body) to output
 	ShowHandshakeResponse bool
+
+	// Output is an output location for messages
+	Output string
 }
 
 func (opts *Options) ToTOML(w io.Writer) error {

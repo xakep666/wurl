@@ -1,6 +1,9 @@
 package util
 
 import (
+	"io"
+	"os"
+
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/pkg/client/gorilla"
@@ -11,6 +14,7 @@ import (
 const (
 	optionsContextKey           = "options"
 	clientConstructorContextKey = "client"
+	outputContextKey            = "output"
 )
 
 func SetupOptions(ctx *cli.Context) error {
@@ -56,4 +60,28 @@ func MustGetClientConstructor(ctx *cli.Context) client.Constructor {
 		panic("client constructor not found in context")
 	}
 	return cc.(client.Constructor)
+}
+
+func SetupOutput(ctx *cli.Context) error {
+	opts := MustGetOptions(ctx)
+	switch opts.Output {
+	case "", "-":
+		ctx.App.Metadata[outputContextKey] = os.Stdout
+		return nil
+	default:
+		file, err := os.OpenFile(opts.Output, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		ctx.App.Metadata[outputContextKey] = file
+		return nil
+	}
+}
+
+func MustGetOutput(ctx *cli.Context) io.WriteCloser {
+	out, ok := ctx.App.Metadata[outputContextKey]
+	if !ok {
+		panic("output not found int context")
+	}
+	return out.(io.WriteCloser)
 }

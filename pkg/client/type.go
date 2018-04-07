@@ -15,6 +15,12 @@ type Client interface {
 	// Ping sends ping message to server with given payload
 	Ping(payload []byte) error
 
+	// WriteSingleMessage sends message of given type with given payload
+	WriteSingleMessage(payload []byte, messageType int) error
+
+	// WriteJSONMessage encodes 'obj' to JSON and sends it to server
+	WriteJSONMessage(obj interface{}) error
+
 	io.Closer
 }
 

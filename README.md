@@ -27,7 +27,9 @@ So I decided to write own console websocket client...
 - [ ] Document all packages
 - [x] Flag to show handshake response
 - [x] Store and load options from file
-- [ ] Warning about binary messages before displaying (cURL-like)
-- [ ] Ability to specify output for binary and text messages
+- [x] Warning about binary messages before displaying (cURL-like)
+- [x] Ability to specify output
 - [ ] Option to send message to server before reading
 - [ ] Good description for all flags/commands
+- [ ] Bash autocomplete
+- [ ] Package to rpm, deb, for Arch (after release)

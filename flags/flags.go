@@ -50,3 +50,9 @@ var ReadConfigFlag = cli.StringFlag{
 	Aliases: []string{"K"},
 	Usage:   "Read config from TOML FILE (\"-\" for STDIN)",
 }
+
+var OutputFlag = cli.StringFlag{
+	Name:    "output",
+	Aliases: []string{"o"},
+	Usage:   "Write to FILE instead of STDOUT (\"-\" for STDOUT explicitly)",
+}
