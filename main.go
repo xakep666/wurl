@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"reflect"
 
 	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
@@ -46,6 +48,16 @@ func main() {
 		}
 		if err := setup(ctx); err != nil {
 			return err
+		}
+		return nil
+	}
+
+	app.After = func(ctx *cli.Context) error {
+		opts := reflect.ValueOf(util.MustGetOptions(ctx))
+		for i := 0; i < opts.NumField(); i++ {
+			if closer, ok := opts.Field(i).Interface().(io.Closer); ok {
+				closer.Close()
+			}
 		}
 		return nil
 	}
