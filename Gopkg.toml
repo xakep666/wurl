@@ -1,7 +1,6 @@
 [prune]
   go-tests = true
   unused-packages = true
-  non-go = true
 
 [[constraint]]
   name = "gopkg.in/urfave/cli.v2"

@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
@@ -25,20 +24,14 @@ var ReadCommand = cli.Command{
 		}
 		defer cl.Close()
 
-		msg := util.GetSingleMessageReader(ctx)
-		if msg != nil {
-			defer msg.Close()
-			if err := cl.WriteMessageFrom(msg); err != nil {
+		opts := util.MustGetOptions(ctx)
+		if opts.MessageAfterConnect != nil {
+			if err := cl.WriteMessageFrom(opts.MessageAfterConnect); err != nil {
 				return err
 			}
 		}
 
-		var out io.Writer = &client.BinaryCheckWriter{
-			Writer: util.MustGetOutput(ctx),
-			Opts:   util.MustGetOptions(ctx),
-		}
-
-		err = cl.ReadTo(out)
+		err = cl.ReadTo(&client.BinaryCheckWriter{Opts: opts})
 		switch err {
 		case nil:
 			// pass

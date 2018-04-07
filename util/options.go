@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -9,14 +10,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/config"
 	"gopkg.in/urfave/cli.v2"
+	"gopkg.in/urfave/cli.v2/altsrc"
 )
 
-func processHeadersFlag(ctx *cli.Context) (ret http.Header, err error) {
-	values := ctx.StringSlice(flags.HeadersFlag.Name)
+func processHeadersFlag(values []string) (ret http.Header, err error) {
 	ret = make(http.Header)
 
 	for _, value := range values {
@@ -51,98 +53,114 @@ func processHeadersFlag(ctx *cli.Context) (ret http.Header, err error) {
 	return
 }
 
-func OptionsFromFlags(ctx *cli.Context, opts *config.Options) (err error) {
-	if ctx.IsSet(flags.InsecureSSLFlag.Name) {
-		opts.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
+func processOutToFlag(outOpt string) (io.Writer, error) {
+	switch outOpt {
+	case "", "-":
+		return os.Stdout, nil
+	default:
+		return os.OpenFile(outOpt, os.O_APPEND|os.O_CREATE, os.ModePerm)
 	}
+}
 
-	if ctx.IsSet(flags.PingPeriodFlag.Name) {
-		opts.PingPeriod = ctx.Duration(flags.PingPeriodFlag.Name)
+func processTraceToFlag(outOpt string) (io.Writer, error) {
+	switch outOpt {
+	case "":
+		return nil, nil
+	case "-":
+		return os.Stdout, nil
+	default:
+		return os.OpenFile(outOpt, os.O_APPEND|os.O_CREATE, os.ModePerm)
 	}
+}
 
-	if ctx.IsSet(flags.IgnorePingsFlag.Name) {
-		opts.RespondPings = !ctx.Bool(flags.IgnorePingsFlag.Name)
+func processFromFlag(inOpt string) (io.Reader, error) {
+	switch {
+	case inOpt == "":
+		return nil, nil
+	case strings.HasPrefix(inOpt, "@"):
+		return os.Open(strings.TrimPrefix(inOpt, "@"))
+	default:
+		return strings.NewReader(inOpt), nil
 	}
+}
 
-	if ctx.IsSet(flags.HeadersFlag.Name) {
-		opts.AdditionalHeaders, err = processHeadersFlag(ctx)
-		if err != nil {
-			return
-		}
+func OptionsFromContext(ctx *cli.Context) (opts *config.Options, err error) {
+	opts = &config.Options{}
+	opts.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
+	opts.PingPeriod = ctx.Duration(flags.PingPeriodFlag.Name)
+	opts.RespondPings = !ctx.Bool(flags.IgnorePingsFlag.Name)
+	opts.AdditionalHeaders, err = processHeadersFlag(ctx.StringSlice(flags.HeadersFlag.Name))
+	if err != nil {
+		return
 	}
-
-	if ctx.IsSet(flags.TraceFlag.Name) {
-		opts.TraceTo = ctx.String(flags.TraceFlag.Name)
+	opts.TraceTo, err = processTraceToFlag(ctx.String(flags.TraceFlag.Name))
+	if err != nil {
+		return
 	}
-
-	if ctx.IsSet(flags.ShowHandshakeResponseFlag.Name) {
-		opts.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
+	opts.ShowHandshakeResponse = ctx.Bool(flags.ShowHandshakeResponseFlag.Name)
+	opts.Output, err = processOutToFlag(ctx.String(flags.OutputFlag.Name))
+	if err != nil {
+		return
 	}
-
-	if ctx.IsSet(flags.OutputFlag.Name) {
-		opts.Output = ctx.String(flags.OutputFlag.Name)
-	}
-
-	if ctx.IsSet(flags.MessageAfterConnectFlag.Name) {
-		opts.MessageAfterConnect = ctx.String(flags.MessageAfterConnectFlag.Name)
-	}
+	opts.ForceBinaryToStdout = ctx.IsSet(flags.OutputFlag.Name)
+	opts.MessageAfterConnect, err = processFromFlag(ctx.String(flags.MessageAfterConnectFlag.Name))
 
 	return
 }
 
-func OptionsFromTOML(ctx *cli.Context, opts *config.Options) (err error) {
-	fileName := ctx.String(flags.ReadConfigFlag.Name)
-	switch fileName {
-	case "":
-		return
-	case "-":
-		return config.FromTOML(os.Stdin, opts)
-	default:
-		var file *os.File
-		file, err = os.Open(fileName)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		err = config.FromTOML(file, opts)
-		return
-	}
-}
-
-func OptionsToTOML(ctx *cli.Context, opts *config.Options) (err error) {
+func OptionsToTOML(ctx *cli.Context) error {
 	fileName := ctx.String(flags.SaveConfigToFlag.Name)
+	var out io.Writer
 	switch fileName {
 	case "":
-		return
+		return nil
 	case "-":
-		return opts.ToTOML(os.Stdout)
+		out = os.Stdout
 	default:
-		var file *os.File
-		file, err = os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		err = opts.ToTOML(file)
-		return
-	}
-}
-
-func SetupLogger(ctx *cli.Context) error {
-	traceTo := MustGetOptions(ctx).TraceTo
-	switch traceTo {
-	case "":
-		logrus.SetLevel(logrus.ErrorLevel)
-	case "-":
-		logrus.SetLevel(logrus.DebugLevel)
-		logrus.SetOutput(os.Stdout)
-	default:
-		file, err := os.OpenFile(traceTo, os.O_APPEND, os.ModePerm)
+		file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 		if err != nil {
 			return err
 		}
-		logrus.SetLevel(logrus.DebugLevel)
-		logrus.SetOutput(file)
+		defer file.Close()
+		out = file
 	}
-	return nil
+
+	optMap := make(map[string]interface{})
+	for _, option := range ctx.App.Flags {
+		optName := option.Names()[0]
+		switch option.(type) {
+		// encode only "altsrc" flags
+		case *altsrc.BoolFlag,
+			*altsrc.DurationFlag,
+			*altsrc.Float64Flag,
+			*altsrc.GenericFlag,
+			*altsrc.Int64Flag,
+			*altsrc.IntFlag,
+			*altsrc.PathFlag,
+			*altsrc.StringFlag,
+			*altsrc.Uint64Flag,
+			*altsrc.UintFlag:
+			optMap[optName] = ctx.Generic(optName)
+		case *altsrc.Float64SliceFlag:
+			optMap[optName] = ctx.Float64Slice(optName)
+		case *altsrc.Int64SliceFlag:
+			optMap[optName] = ctx.Int64Slice(optName)
+		case *altsrc.IntSliceFlag:
+			optMap[optName] = ctx.IntSlice(optName)
+		case *altsrc.StringSliceFlag:
+			optMap[optName] = ctx.StringSlice(optName)
+		}
+	}
+	fmt.Println(optMap)
+	return toml.NewEncoder(out).Encode(optMap)
+}
+
+func SetupLogger(ctx *cli.Context) {
+	traceTo := MustGetOptions(ctx).TraceTo
+	if traceTo == nil {
+		logrus.SetLevel(logrus.ErrorLevel)
+	} else {
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.SetOutput(traceTo)
+	}
 }

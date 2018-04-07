@@ -10,6 +10,7 @@ import (
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/util"
 	"gopkg.in/urfave/cli.v2"
+	"gopkg.in/urfave/cli.v2/altsrc"
 )
 
 var Version = semver.MustParse("0.0.1-alpha")
@@ -20,26 +21,33 @@ func main() {
 		Usage:   "console websocket client",
 		Version: Version.String(),
 		Flags: []cli.Flag{
-			&flags.InsecureSSLFlag,
-			&flags.HeadersFlag,
-			&flags.PingPeriodFlag,
-			&flags.IgnorePingsFlag,
-			&flags.TraceFlag,
-			&flags.ShowHandshakeResponseFlag,
-			&flags.ReadConfigFlag,
-			&flags.SaveConfigToFlag,
-			&flags.OutputFlag,
-			&flags.MessageAfterConnectFlag,
+			flags.InsecureSSLFlag,
+			flags.HeadersFlag,
+			flags.PingPeriodFlag,
+			flags.IgnorePingsFlag,
+			flags.TraceFlag,
+			flags.ShowHandshakeResponseFlag,
+			flags.ReadConfigFlag,
+			flags.SaveConfigToFlag,
+			flags.OutputFlag,
+			flags.MessageAfterConnectFlag,
 		},
 		Commands: []*cli.Command{
 			&commands.ReadCommand,
 		},
-		Before: func(ctx *cli.Context) error {
-			if err := setup(ctx); err != nil {
+	}
+
+	app.Before = func(ctx *cli.Context) error {
+		if ctx.IsSet(flags.ReadConfigFlag.Name) {
+			loadFromConfig := altsrc.InitInputSourceWithContext(app.Flags, altsrc.NewTomlSourceFromFlagFunc(flags.ReadConfigFlag.Name))
+			if err := loadFromConfig(ctx); err != nil {
 				return err
 			}
-			return nil
-		},
+		}
+		if err := setup(ctx); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -52,18 +60,11 @@ func setup(ctx *cli.Context) error {
 	if err := util.SetupOptions(ctx); err != nil {
 		return err
 	}
-	if err := util.SetupLogger(ctx); err != nil {
-		return err
-	}
+	util.SetupLogger(ctx)
 	logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
 	if err := util.SetupClientConstructor(ctx); err != nil {
 		return err
 	}
-	if err := util.SetupOutput(ctx); err != nil {
-		return err
-	}
-	if err := util.SetupSingleMessageReader(ctx); err != nil {
-		return err
-	}
+
 	return nil
 }

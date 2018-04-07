@@ -4,8 +4,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/BurntSushi/toml"
 )
 
 // Options describes global wurl options
@@ -23,28 +21,17 @@ type Options struct {
 	RespondPings bool
 
 	// TraceTo determines where to write debug messages.
-	// If TraceTo is empty string debug messages will be disabled.
-	// If TraceTo is "-" debug messages will be written to stdout.
-	// In other cases debug messages will be written to file.
-	TraceTo string
+	TraceTo io.Writer
 
 	// ShowHandshakeResponse allows to include handshake response (headers+body) to output
 	ShowHandshakeResponse bool
 
 	// Output is an output location for messages
-	Output string
+	Output io.Writer
+
+	// ForceBinaryToStdout allows to ignore warning about binary output to stdout
+	ForceBinaryToStdout bool
 
 	// MessageAfterConnect allows to send message to server after successful connection.
-	// If @file specified, sends file content to server.
-	// If content is UTF-8 encoded string, sends as text message. Otherwise sends as binary message.
-	MessageAfterConnect string
-}
-
-func (opts *Options) ToTOML(w io.Writer) error {
-	return toml.NewEncoder(w).Encode(opts)
-}
-
-func FromTOML(r io.Reader, opts *Options) error {
-	_, err := toml.DecodeReader(r, opts)
-	return err
+	MessageAfterConnect io.Reader
 }

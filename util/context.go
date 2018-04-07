@@ -1,11 +1,6 @@
 package util
 
 import (
-	"io"
-	"io/ioutil"
-	"os"
-	"strings"
-
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/pkg/client/gorilla"
@@ -16,31 +11,21 @@ import (
 const (
 	optionsContextKey           = "options"
 	clientConstructorContextKey = "client"
-	outputContextKey            = "output"
-	singleMessageContextKey     = "singlemsg"
 )
 
 func SetupOptions(ctx *cli.Context) error {
-	var opts config.Options
-
-	if ctx.IsSet(flags.ReadConfigFlag.Name) {
-		if err := OptionsFromTOML(ctx, &opts); err != nil {
-			return err
-		}
-	}
-
-	err := OptionsFromFlags(ctx, &opts)
+	opts, err := OptionsFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
 	if ctx.IsSet(flags.SaveConfigToFlag.Name) {
-		if err := OptionsToTOML(ctx, &opts); err != nil {
+		if err := OptionsToTOML(ctx); err != nil {
 			return err
 		}
 	}
 
-	ctx.App.Metadata[optionsContextKey] = &opts
+	ctx.App.Metadata[optionsContextKey] = opts
 	return nil
 }
 
@@ -63,53 +48,4 @@ func MustGetClientConstructor(ctx *cli.Context) client.Constructor {
 		panic("client constructor not found in context")
 	}
 	return cc.(client.Constructor)
-}
-
-func SetupOutput(ctx *cli.Context) error {
-	opts := MustGetOptions(ctx)
-	switch opts.Output {
-	case "", "-":
-		ctx.App.Metadata[outputContextKey] = os.Stdout
-		return nil
-	default:
-		file, err := os.OpenFile(opts.Output, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-		if err != nil {
-			return err
-		}
-		ctx.App.Metadata[outputContextKey] = file
-		return nil
-	}
-}
-
-func MustGetOutput(ctx *cli.Context) io.WriteCloser {
-	out, ok := ctx.App.Metadata[outputContextKey]
-	if !ok {
-		panic("output not found int context")
-	}
-	return out.(io.WriteCloser)
-}
-
-func SetupSingleMessageReader(ctx *cli.Context) error {
-	opts := MustGetOptions(ctx)
-	switch {
-	case opts.MessageAfterConnect == "":
-		// pass
-	case strings.HasPrefix(opts.MessageAfterConnect, "@"):
-		file, err := os.Open(strings.TrimPrefix(opts.MessageAfterConnect, "@"))
-		if err != nil {
-			return err
-		}
-		ctx.App.Metadata[singleMessageContextKey] = file
-	default:
-		ctx.App.Metadata[singleMessageContextKey] = ioutil.NopCloser(strings.NewReader(opts.MessageAfterConnect))
-	}
-	return nil
-}
-
-func GetSingleMessageReader(ctx *cli.Context) io.ReadCloser {
-	msg, ok := ctx.App.Metadata[singleMessageContextKey]
-	if !ok {
-		return nil
-	}
-	return msg.(io.ReadCloser)
 }

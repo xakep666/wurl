@@ -38,17 +38,26 @@
     "unix",
     "windows"
   ]
-  revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
+  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
 
 [[projects]]
   branch = "v2"
   name = "gopkg.in/urfave/cli.v2"
-  packages = ["."]
+  packages = [
+    ".",
+    "altsrc"
+  ]
   revision = "d3ae77c26ac8db90639677e4831a728d33c36111"
+
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2c1640e8aeb09e4887cf785f41c30831ac2de381920df85e3b3081207aff063c"
+  inputs-digest = "bfae3e2ac050a6a51bf4d0fca76122a89988a475c77322354b768c1a89de3c38"
   solver-name = "gps-cdcl"
   solver-version = 1
