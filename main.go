@@ -8,8 +8,8 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
-	"github.com/xakep666/wurl/commands"
 	"github.com/xakep666/wurl/flags"
+	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/util"
 	"gopkg.in/urfave/cli.v2"
 	"gopkg.in/urfave/cli.v2/altsrc"
@@ -33,14 +33,19 @@ func main() {
 			flags.SaveConfigToFlag,
 			flags.OutputFlag,
 			flags.MessageAfterConnectFlag,
+			// completion
+			util.InitCompletionFlag,
 		},
-		Commands: []*cli.Command{
-			&commands.ReadCommand,
-		},
-		EnableShellCompletion: true,
+		CustomAppHelpTemplate: util.AppHelp,
+		Commands:              nil,
 	}
 
 	app.Before = func(ctx *cli.Context) error {
+		if ctx.IsSet(util.InitCompletionFlag.Name) {
+			util.PrintCompletion(ctx)
+			os.Exit(0)
+		}
+
 		if ctx.IsSet(flags.ReadConfigFlag.Name) {
 			loadFromConfig := altsrc.InitInputSourceWithContext(app.Flags, altsrc.NewTomlSourceFromFlagFunc(flags.ReadConfigFlag.Name))
 			if err := loadFromConfig(ctx); err != nil {
@@ -52,6 +57,8 @@ func main() {
 		}
 		return nil
 	}
+
+	app.Action = action
 
 	app.After = func(ctx *cli.Context) error {
 		opts := reflect.ValueOf(util.MustGetOptions(ctx)).Elem()
@@ -76,6 +83,40 @@ func setup(ctx *cli.Context) error {
 	util.SetupLogger(ctx)
 	logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
 	if err := util.SetupClientConstructor(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func action(ctx *cli.Context) error {
+	if ctx.NArg() < 1 {
+		cli.ShowCommandHelp(ctx, "read")
+		return fmt.Errorf("url must be provided")
+	}
+	cl, err := util.MustGetClientConstructor(ctx)(ctx.Args().First(), util.MustGetOptions(ctx))
+	if err != nil {
+		return err
+	}
+	defer cl.Close()
+
+	opts := util.MustGetOptions(ctx)
+	if opts.MessageAfterConnect != nil {
+		if err := cl.WriteMessageFrom(opts.MessageAfterConnect); err != nil {
+			return err
+		}
+	}
+
+	err = cl.ReadTo(&client.BinaryCheckWriter{Opts: opts})
+	switch err {
+	case nil:
+		// pass
+	case client.BinaryOutError:
+		fmt.Println("WARNING: binary output can mess up your terminal.")
+		fmt.Printf("Use \"--%[1]s -\" to tell %[2]s to output it to your "+
+			"terminal anyway, or consider \"--%[1]s <FILE>\" to save to a file.\n", flags.OutputFlag.Name, ctx.App.Name)
+		return nil
+	default:
 		return err
 	}
 
