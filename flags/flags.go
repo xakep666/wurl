@@ -61,5 +61,5 @@ var OutputFlag = altsrc.NewStringFlag(&cli.StringFlag{
 var MessageAfterConnectFlag = altsrc.NewStringFlag(&cli.StringFlag{
 	Name:    "data",
 	Aliases: []string{"d"},
-	Usage:   "Send a message to server after connection. Use @file notation to read from file.",
+	Usage:   "Send a message to server after connection. Use @file notation to read from file or \"-\" to read from STDIN.",
 })

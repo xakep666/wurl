@@ -77,6 +77,8 @@ func processFromFlag(inOpt string) (io.Reader, error) {
 	switch {
 	case inOpt == "":
 		return nil, nil
+	case inOpt == "-":
+		return os.Stdin, nil
 	case strings.HasPrefix(inOpt, "@"):
 		return os.Open(strings.TrimPrefix(inOpt, "@"))
 	default:
