@@ -91,7 +91,7 @@ func setup(ctx *cli.Context) error {
 
 func action(ctx *cli.Context) error {
 	if ctx.NArg() < 1 {
-		cli.ShowCommandHelp(ctx, "read")
+		cli.ShowAppHelp(ctx)
 		return fmt.Errorf("url must be provided")
 	}
 	cl, err := util.MustGetClientConstructor(ctx)(ctx.Args().First(), util.MustGetOptions(ctx))
