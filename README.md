@@ -31,5 +31,6 @@ So I decided to write own console websocket client...
 - [x] Ability to specify output
 - [x] Option to send message to server before reading
 - [ ] Good description for all flags/commands
+- [ ] Proxy support
 - [x] Bash autocomplete
 - [ ] Package to rpm, deb, for Arch (after release)
