@@ -2,6 +2,7 @@ package client
 
 import (
 	"io"
+	"net/http"
 
 	"github.com/xakep666/wurl/pkg/config"
 )
@@ -53,4 +54,4 @@ type Client interface {
 }
 
 // Constructor is a type for client constructors
-type Constructor func(url string, opts *config.Options) (Client, error)
+type Constructor func(url string, opts *config.Options) (Client, *http.Response, error)

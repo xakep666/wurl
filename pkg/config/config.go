@@ -21,17 +21,17 @@ type Options struct {
 	RespondPings bool
 
 	// TraceTo determines where to write debug messages.
-	TraceTo io.Writer
+	TraceTo io.WriteCloser
 
 	// ShowHandshakeResponse allows to include handshake response (headers+body) to output
 	ShowHandshakeResponse bool
 
 	// Output is an output location for messages
-	Output io.Writer
+	Output io.WriteCloser
 
 	// ForceBinaryToStdout allows to ignore warning about binary output to stdout
 	ForceBinaryToStdout bool
 
 	// MessageAfterConnect allows to send message to server after successful connection.
-	MessageAfterConnect io.Reader
+	MessageAfterConnect io.ReadCloser
 }

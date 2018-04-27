@@ -53,27 +53,35 @@ func processHeadersFlag(values []string) (ret http.Header, err error) {
 	return
 }
 
-func processOutToFlag(outOpt string) (io.Writer, error) {
+type nopWriteCloser struct {
+	io.WriteCloser
+}
+
+func (n *nopWriteCloser) Close() error {
+	return nil
+}
+
+func processOutToFlag(outOpt string) (io.WriteCloser, error) {
 	switch outOpt {
 	case "", "-":
-		return os.Stdout, nil
+		return &nopWriteCloser{os.Stdout}, nil
 	default:
 		return os.OpenFile(outOpt, os.O_APPEND|os.O_CREATE, os.ModePerm)
 	}
 }
 
-func processTraceToFlag(outOpt string) (io.Writer, error) {
+func processTraceToFlag(outOpt string) (io.WriteCloser, error) {
 	switch outOpt {
 	case "":
 		return nil, nil
 	case "-":
-		return os.Stdout, nil
+		return &nopWriteCloser{os.Stdout}, nil
 	default:
 		return os.OpenFile(outOpt, os.O_APPEND|os.O_CREATE, os.ModePerm)
 	}
 }
 
-func processFromFlag(inOpt string) (io.Reader, error) {
+func processFromFlag(inOpt string) (io.ReadCloser, error) {
 	switch {
 	case inOpt == "":
 		return nil, nil
@@ -82,7 +90,7 @@ func processFromFlag(inOpt string) (io.Reader, error) {
 	case strings.HasPrefix(inOpt, "@"):
 		return os.Open(strings.TrimPrefix(inOpt, "@"))
 	default:
-		return strings.NewReader(inOpt), nil
+		return ioutil.NopCloser(strings.NewReader(inOpt)), nil
 	}
 }
 

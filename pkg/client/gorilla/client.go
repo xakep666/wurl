@@ -2,7 +2,7 @@ package gorilla
 
 import (
 	"crypto/tls"
-	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -60,21 +60,15 @@ func (c *Client) periodicPinger() {
 	}
 }
 
-func NewClient(url string, opts *config.Options) (client.Client, error) {
+func NewClient(url string, opts *config.Options) (client.Client, *http.Response, error) {
 	dialer := setupDialer(opts)
 	conn, resp, err := dialer.Dial(url, opts.AdditionalHeaders)
+
 	switch err {
-	case nil:
-		if printErr := client.WriteHandshakeResponse(resp, opts); printErr != nil {
-			return nil, printErr
-		}
 	case websocket.ErrBadHandshake:
-		if printErr := client.WriteHandshakeResponse(resp, opts); printErr != nil {
-			return nil, printErr
-		}
-		return nil, fmt.Errorf("bad handshake: status %s", resp.Status)
+		return nil, resp, client.ErrBadHandshake
 	default:
-		return nil, err
+		return nil, resp, err
 	}
 
 	log := logrus.StandardLogger().WithField("client", "gorilla")
@@ -87,7 +81,7 @@ func NewClient(url string, opts *config.Options) (client.Client, error) {
 		go ret.periodicPinger()
 	}
 
-	return ret, nil
+	return ret, resp, nil
 }
 
 func (c *Client) Close() error {

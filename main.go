@@ -18,7 +18,7 @@ import (
 var Version = semver.MustParse("0.0.1-alpha")
 
 func main() {
-	app := cli.App{
+	err := (&cli.App{
 		Name:    "wurl",
 		Usage:   "console websocket client",
 		Version: Version.String(),
@@ -38,45 +38,30 @@ func main() {
 		},
 		CustomAppHelpTemplate: util.AppHelp,
 		Commands:              nil,
-	}
+		Before:                setup,
+		Action:                action,
+		After:                 after,
+	}).Run(os.Args)
 
-	app.Before = func(ctx *cli.Context) error {
-		if ctx.IsSet(util.InitCompletionFlag.Name) {
-			util.PrintCompletion(ctx)
-			os.Exit(0)
-		}
-
-		if ctx.IsSet(flags.ReadConfigFlag.Name) {
-			loadFromConfig := altsrc.InitInputSourceWithContext(app.Flags, altsrc.NewTomlSourceFromFlagFunc(flags.ReadConfigFlag.Name))
-			if err := loadFromConfig(ctx); err != nil {
-				return err
-			}
-		}
-		if err := setup(ctx); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	app.Action = action
-
-	app.After = func(ctx *cli.Context) error {
-		opts := reflect.ValueOf(util.MustGetOptions(ctx)).Elem()
-		for i := 0; i < opts.NumField(); i++ {
-			if closer, ok := opts.Field(i).Interface().(io.Closer); ok {
-				closer.Close()
-			}
-		}
-		return nil
-	}
-
-	if err := app.Run(os.Args); err != nil {
-		fmt.Println("ERROR:", err)
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
 		os.Exit(1)
 	}
 }
 
 func setup(ctx *cli.Context) error {
+	if ctx.IsSet(util.InitCompletionFlag.Name) {
+		util.PrintCompletion(ctx)
+		os.Exit(0)
+	}
+
+	if ctx.IsSet(flags.ReadConfigFlag.Name) {
+		loadFromConfig := altsrc.InitInputSourceWithContext(ctx.App.Flags, altsrc.NewTomlSourceFromFlagFunc(flags.ReadConfigFlag.Name))
+		if err := loadFromConfig(ctx); err != nil {
+			return err
+		}
+	}
+
 	if err := util.SetupOptions(ctx); err != nil {
 		return err
 	}
@@ -94,13 +79,20 @@ func action(ctx *cli.Context) error {
 		cli.ShowAppHelp(ctx)
 		return fmt.Errorf("url must be provided")
 	}
-	cl, err := util.MustGetClientConstructor(ctx)(ctx.Args().First(), util.MustGetOptions(ctx))
+
+	opts := util.MustGetOptions(ctx)
+
+	cl, resp, err := util.MustGetClientConstructor(ctx)(ctx.Args().First(), opts)
+	if opts.ShowHandshakeResponse {
+		if resp != nil {
+			resp.Write(os.Stdout)
+		}
+	}
 	if err != nil {
 		return err
 	}
 	defer cl.Close()
 
-	opts := util.MustGetOptions(ctx)
 	if opts.MessageAfterConnect != nil {
 		if err := cl.WriteMessageFrom(opts.MessageAfterConnect); err != nil {
 			return err
@@ -120,5 +112,15 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+func after(ctx *cli.Context) error {
+	opts := reflect.ValueOf(util.MustGetOptions(ctx)).Elem()
+	for i := 0; i < opts.NumField(); i++ {
+		if closer, ok := opts.Field(i).Interface().(io.Closer); ok {
+			closer.Close()
+		}
+	}
 	return nil
 }
