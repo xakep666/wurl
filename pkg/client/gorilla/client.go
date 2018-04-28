@@ -37,7 +37,7 @@ func (c *Client) prepareConnection() {
 	c.conn.SetPingHandler(func(appData string) error {
 		if c.opts.RespondPings {
 			c.log.Debugf("ping received from %s, payload %s", c.conn.RemoteAddr(), appData)
-			return c.conn.WriteMessage(websocket.PingMessage, nil)
+			return c.conn.WriteMessage(websocket.PongMessage, nil)
 		}
 		return nil
 	})
