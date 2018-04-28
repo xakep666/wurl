@@ -65,6 +65,8 @@ func NewClient(url string, opts *config.Options) (client.Client, *http.Response,
 	conn, resp, err := dialer.Dial(url, opts.AdditionalHeaders)
 
 	switch err {
+	case nil:
+		// pass
 	case websocket.ErrBadHandshake:
 		return nil, resp, client.ErrBadHandshake
 	default:
