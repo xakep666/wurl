@@ -86,6 +86,7 @@ func action(ctx *cli.Context) error {
 	if opts.ShowHandshakeResponse {
 		if resp != nil {
 			resp.Write(os.Stdout)
+			fmt.Fprintln(os.Stdout)
 		}
 	}
 	if err != nil {
