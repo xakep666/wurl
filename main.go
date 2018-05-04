@@ -33,6 +33,7 @@ func main() {
 			flags.SaveConfigToFlag,
 			flags.OutputFlag,
 			flags.MessageAfterConnectFlag,
+			flags.ProxyURLFlag,
 			// completion
 			util.InitCompletionFlag,
 		},

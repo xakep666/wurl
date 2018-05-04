@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"os"
 	"strings"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/config"
+	"golang.org/x/net/proxy"
 	"gopkg.in/urfave/cli.v2"
 	"gopkg.in/urfave/cli.v2/altsrc"
 )
@@ -94,6 +96,33 @@ func processFromFlag(inOpt string) (io.ReadCloser, error) {
 	}
 }
 
+func processProxyFlag(urlOpt string) (dialFunc config.DialFunc, err error) {
+	proxyURL, err := url.Parse(urlOpt)
+	if err != nil {
+		return nil, err
+	}
+
+	switch proxyURL.Scheme {
+	case "http", "https":
+		var dialer proxy.Dialer
+		dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
+		dialFunc = dialer.Dial
+	case "socks5":
+		var auth *proxy.Auth
+		if proxyURL.User != nil {
+			auth = &proxy.Auth{User: proxyURL.User.Username()}
+			auth.Password, _ = proxyURL.User.Password()
+		}
+		var dialer proxy.Dialer
+		dialer, err = proxy.SOCKS5("tcp", proxyURL.Host, auth, proxy.Direct)
+		dialFunc = dialer.Dial
+	default:
+		err = fmt.Errorf("unsupported proxy protocol \"%s\"", proxyURL.Scheme)
+	}
+
+	return
+}
+
 func OptionsFromContext(ctx *cli.Context) (opts *config.Options, err error) {
 	opts = &config.Options{}
 	opts.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
@@ -114,6 +143,10 @@ func OptionsFromContext(ctx *cli.Context) (opts *config.Options, err error) {
 	}
 	opts.ForceBinaryToStdout = ctx.IsSet(flags.OutputFlag.Name)
 	opts.MessageAfterConnect, err = processFromFlag(ctx.String(flags.MessageAfterConnectFlag.Name))
+	if err != nil {
+		return
+	}
+	opts.DialFunc, err = processProxyFlag(ctx.String(flags.ProxyURLFlag.Name))
 
 	return
 }

@@ -2,9 +2,12 @@ package config
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"time"
 )
+
+type DialFunc func(network, addr string) (net.Conn, error)
 
 // Options describes global wurl options
 type Options struct {
@@ -34,4 +37,7 @@ type Options struct {
 
 	// MessageAfterConnect allows to send message to server after successful connection.
 	MessageAfterConnect io.ReadCloser
+
+	// DialFunc is a function for creating TCP connections. If nil, net.Dial will be used.
+	DialFunc DialFunc
 }

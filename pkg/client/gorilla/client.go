@@ -30,6 +30,7 @@ func setupDialer(opts *config.Options) *websocket.Dialer {
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: opts.AllowInsecureSSL,
 		},
+		NetDial: opts.DialFunc,
 	}
 }
 

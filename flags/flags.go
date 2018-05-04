@@ -63,3 +63,9 @@ var MessageAfterConnectFlag = altsrc.NewStringFlag(&cli.StringFlag{
 	Aliases: []string{"d"},
 	Usage:   "Send a message to server after connection. Use @file notation to read from file or \"-\" to read from STDIN.",
 })
+
+var ProxyURLFlag = altsrc.NewStringFlag(&cli.StringFlag{
+	Name:    "proxy",
+	Aliases: []string{"x"},
+	Usage:   "Use this proxy. Supported protocols: http, https, socks5",
+})
