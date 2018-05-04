@@ -33,6 +33,15 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/net"
+  packages = [
+    "internal/socks",
+    "proxy"
+  ]
+  revision = "640f4622ab692b87c2f3a94265e6f579fe38263d"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = [
     "unix",
@@ -58,6 +67,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bfae3e2ac050a6a51bf4d0fca76122a89988a475c77322354b768c1a89de3c38"
+  inputs-digest = "c9226bbe97f4410e6d79e7787cc2d04b47d34b75ea2ca61160f456776ce423ab"
   solver-name = "gps-cdcl"
   solver-version = 1
