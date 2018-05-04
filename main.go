@@ -18,7 +18,7 @@ import (
 var Version = semver.MustParse("0.0.1-alpha")
 
 func main() {
-	err := (&cli.App{
+	app := &cli.App{
 		Name:    "wurl",
 		Usage:   "console websocket client",
 		Version: Version.String(),
@@ -42,9 +42,9 @@ func main() {
 		Before:                setup,
 		Action:                action,
 		After:                 after,
-	}).Run(os.Args)
+	}
 
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		fmt.Printf("ERROR: %v\n", err)
 		os.Exit(1)
 	}
@@ -53,23 +53,24 @@ func main() {
 func setup(ctx *cli.Context) error {
 	if ctx.IsSet(util.InitCompletionFlag.Name) {
 		util.PrintCompletion(ctx)
-		os.Exit(0)
+		return cli.Exit("", 0)
 	}
 
 	if ctx.IsSet(flags.ReadConfigFlag.Name) {
 		loadFromConfig := altsrc.InitInputSourceWithContext(ctx.App.Flags, altsrc.NewTomlSourceFromFlagFunc(flags.ReadConfigFlag.Name))
 		if err := loadFromConfig(ctx); err != nil {
-			return err
+			return cli.Exit(err, 1)
 		}
 	}
 
 	if err := util.SetupOptions(ctx); err != nil {
-		return err
+		return cli.Exit(err, 1)
 	}
+
 	util.SetupLogger(ctx)
 	logrus.Debugf("running with config %+v", util.MustGetOptions(ctx))
 	if err := util.SetupClientConstructor(ctx); err != nil {
-		return err
+		return cli.Exit(err, 1)
 	}
 
 	return nil

@@ -103,6 +103,8 @@ func processProxyFlag(urlOpt string) (dialFunc config.DialFunc, err error) {
 	}
 
 	switch proxyURL.Scheme {
+	case "":
+		// pass
 	case "http", "https":
 		var dialer proxy.Dialer
 		dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
