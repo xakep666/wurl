@@ -102,25 +102,9 @@ func processProxyFlag(urlOpt string) (dialFunc config.DialFunc, err error) {
 		return nil, err
 	}
 
-	switch proxyURL.Scheme {
-	case "":
-		// pass
-	case "http", "https":
-		var dialer proxy.Dialer
-		dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
-		dialFunc = dialer.Dial
-	case "socks5":
-		var auth *proxy.Auth
-		if proxyURL.User != nil {
-			auth = &proxy.Auth{User: proxyURL.User.Username()}
-			auth.Password, _ = proxyURL.User.Password()
-		}
-		var dialer proxy.Dialer
-		dialer, err = proxy.SOCKS5("tcp", proxyURL.Host, auth, proxy.Direct)
-		dialFunc = dialer.Dial
-	default:
-		err = fmt.Errorf("unsupported proxy protocol \"%s\"", proxyURL.Scheme)
-	}
+	var dialer proxy.Dialer
+	dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
+	dialFunc = dialer.Dial
 
 	return
 }
