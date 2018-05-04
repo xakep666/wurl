@@ -67,5 +67,5 @@ var MessageAfterConnectFlag = altsrc.NewStringFlag(&cli.StringFlag{
 var ProxyURLFlag = altsrc.NewStringFlag(&cli.StringFlag{
 	Name:    "proxy",
 	Aliases: []string{"x"},
-	Usage:   "Use this proxy. Supported protocols: http, https, socks5",
+	Usage:   "[protocol://]host[:port] Use this proxy. Supported protocols: http, https, socks5",
 })
