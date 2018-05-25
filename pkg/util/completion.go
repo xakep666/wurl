@@ -61,6 +61,7 @@ func createTemplateFunctions() template.FuncMap {
 	return ret
 }
 
+// PrintCompletion prints a generated bash or zsh completion script.
 func PrintCompletion(ctx *cli.Context) {
 	shell := ctx.String(InitCompletionFlag.Name)
 

@@ -1,5 +1,6 @@
 package util
 
+// AppHelp -- custom application help template for "cli".
 const AppHelp = `NAME:
    {{.Name}} - {{.Usage}}
 USAGE:

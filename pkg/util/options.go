@@ -1,3 +1,4 @@
+// Package util contains useful functions for client.
 package util
 
 import (
@@ -109,6 +110,7 @@ func processProxyFlag(urlOpt string) (dialFunc config.DialFunc, err error) {
 	return
 }
 
+// OptionsFromContext extracts program options from command-line flags. For flags description see "flags" package.
 func OptionsFromContext(ctx *cli.Context) (opts *config.Options, err error) {
 	opts = &config.Options{}
 	opts.AllowInsecureSSL = ctx.Bool(flags.InsecureSSLFlag.Name)
@@ -137,6 +139,7 @@ func OptionsFromContext(ctx *cli.Context) (opts *config.Options, err error) {
 	return
 }
 
+// OptionsToTOML saves options to toml-encoded file
 func OptionsToTOML(ctx *cli.Context) error {
 	fileName := ctx.String(flags.SaveConfigToFlag.Name)
 	var out io.Writer
@@ -184,6 +187,7 @@ func OptionsToTOML(ctx *cli.Context) error {
 	return toml.NewEncoder(out).Encode(optMap)
 }
 
+// SetupLogger sets up logger for debug information according to flags.
 func SetupLogger(ctx *cli.Context) {
 	traceTo := MustGetOptions(ctx).TraceTo
 	if traceTo == nil {
