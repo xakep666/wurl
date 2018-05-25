@@ -15,13 +15,13 @@ import (
 	"gopkg.in/urfave/cli.v2/altsrc"
 )
 
-var Version = semver.MustParse("0.0.1-alpha")
+var Version = "0.0.1-alpha"
 
 func main() {
 	app := &cli.App{
 		Name:    "wurl",
 		Usage:   "console websocket client",
-		Version: Version.String(),
+		Version: semver.MustParse(Version).String(),
 		Flags: []cli.Flag{
 			flags.InsecureSSLFlag,
 			flags.HeadersFlag,
