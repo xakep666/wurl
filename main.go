@@ -51,6 +51,10 @@ func main() {
 }
 
 func setup(ctx *cli.Context) error {
+	if ctx.NArg() < 1 {
+		return cli.Exit("Nothing to do.", 1)
+	}
+
 	if ctx.IsSet(util.InitCompletionFlag.Name) {
 		util.PrintCompletion(ctx)
 		return cli.Exit("", 0)
@@ -77,11 +81,6 @@ func setup(ctx *cli.Context) error {
 }
 
 func action(ctx *cli.Context) error {
-	if ctx.NArg() < 1 {
-		cli.ShowAppHelp(ctx)
-		return fmt.Errorf("url must be provided")
-	}
-
 	opts := util.MustGetOptions(ctx)
 
 	cl, resp, err := util.MustGetClientConstructor(ctx)(ctx.Args().First(), opts)
