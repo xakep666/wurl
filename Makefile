@@ -8,7 +8,7 @@ EXECUTABLE=wurl
 GO?=vgo
 LDFLAGS+=-X main.Version=$(VERSION)
 
-.PHONY: build install uninstall github-release build
+.PHONY: build install uninstall github-release clean
 .DEFAULT_GOAL := build
 
 build:
