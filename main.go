@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
-	"github.com/xakep666/wurl/util"
+	"github.com/xakep666/wurl/pkg/util"
 	"gopkg.in/urfave/cli.v2"
 	"gopkg.in/urfave/cli.v2/altsrc"
 )
