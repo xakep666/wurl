@@ -17,6 +17,13 @@ So I decided to write own console websocket client...
 ## Installation
 `go get -u github.com/xakep666/wurl`
 
+`vgo get -u github.com/xakep666/wurl`
+
+Pre-built binary releases available for:
+- Linux: x86_64, x86, arm
+- Mac OS (darwin): x86_64
+- Windows: x86_64, x86
+
 ## Current features
 - Read text/binary messages from connection and display it
 - Ability to set additional headers for connection upgrade request
