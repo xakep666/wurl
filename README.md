@@ -24,7 +24,7 @@ So I decided to write own console websocket client...
 - Can periodically send ping message to server (period can be set through flags)
 
 ### TODOs for v1
-- [ ] Document all packages
+- [x] Document all packages
 - [x] Flag to show handshake response
 - [x] Store and load options from file
 - [x] Warning about binary messages before displaying (cURL-like)
