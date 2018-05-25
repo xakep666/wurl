@@ -1,3 +1,4 @@
+// Package gorilla contains websocket client implementation using "github.com/gorilla/websocket" library.
 package gorilla
 
 import (
@@ -17,6 +18,7 @@ var (
 	_ client.Constructor = NewClient
 )
 
+// Client is a websocket client implementation
 type Client struct {
 	conn           *websocket.Conn
 	connWriteMutex sync.Mutex
@@ -61,6 +63,10 @@ func (c *Client) periodicPinger() {
 	}
 }
 
+// NewClient constructs a websocket client.
+// First stage is a connection establishing.
+// Second stage is connection tuning: adding ping/pong handlers according to options.
+// Third stage is a optional start of periodic ping routine (if specified).
 func NewClient(url string, opts *config.Options) (client.Client, *http.Response, error) {
 	dialer := setupDialer(opts)
 	conn, resp, err := dialer.Dial(url, opts.AdditionalHeaders)
@@ -87,6 +93,7 @@ func NewClient(url string, opts *config.Options) (client.Client, *http.Response,
 	return ret, resp, nil
 }
 
+// Close closes connection to server.
 func (c *Client) Close() error {
 	c.log.Debugf("closing websocket client")
 	return c.conn.Close()
