@@ -1,3 +1,4 @@
+// Package client contains basic types for clients implementations
 package client
 
 import (
@@ -7,9 +8,10 @@ import (
 	"github.com/xakep666/wurl/pkg/config"
 )
 
+// MessageType determines frame types.
+// The message types are defined in RFC 6455, section 11.8.
 type MessageType int
 
-// The message types are defined in RFC 6455, section 11.8.
 const (
 	// TextMessage denotes a text data message. The text message payload is
 	// interpreted as UTF-8 encoded text data.
