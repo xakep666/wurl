@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/textproto"
 	"net/url"
@@ -98,15 +99,20 @@ func processFromFlag(inOpt string) (io.ReadCloser, error) {
 }
 
 func processProxyFlag(urlOpt string) (dialFunc config.DialFunc, err error) {
-	proxyURL, err := url.Parse(urlOpt)
-	if err != nil {
-		return nil, err
+	if urlOpt != "" {
+		var dialer proxy.Dialer
+		proxyURL, err := url.Parse(urlOpt)
+		if err != nil {
+			return nil, err
+		}
+		dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
+		if err != nil {
+			return nil, err
+		}
+		dialFunc = dialer.Dial
+	} else {
+		dialFunc = net.Dial
 	}
-
-	var dialer proxy.Dialer
-	dialer, err = proxy.FromURL(proxyURL, proxy.Direct)
-	dialFunc = dialer.Dial
-
 	return
 }
 
