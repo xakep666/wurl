@@ -5,7 +5,7 @@ VERSION=$(LATEST_TAG:v%=%)
 endif
 EXECUTABLE=wurl
 
-GO?=vgo
+GO?=go
 LDFLAGS+=-X main.Version=$(VERSION)
 
 .PHONY: build install uninstall github-release clean
@@ -13,7 +13,7 @@ LDFLAGS+=-X main.Version=$(VERSION)
 
 build:
 	@echo "Building for current OS/architecture"
-	$(GO) build -o ./$(EXECUTABLE) -v -ldflags="$(LDFLAGS)"
+	$(GO) build -mod vendor -o ./$(EXECUTABLE) -v -ldflags="$(LDFLAGS)"
 
 PREFIX ?= /usr/local
 DESTDIR=
