@@ -3,7 +3,7 @@ module github.com/xakep666/wurl
 require (
 	github.com/BurntSushi/toml v0.3.0
 	github.com/blang/semver v0.0.0-20170727064818-2ee87856327b
-	github.com/gorilla/websocket v1.2.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/sirupsen/logrus v1.0.5
 	golang.org/x/net v0.7.0
 	gopkg.in/urfave/cli.v2 v2.0.0-20180128182452-d3ae77c26ac8
