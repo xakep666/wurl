@@ -2,8 +2,8 @@
 package flags
 
 import (
-	"gopkg.in/urfave/cli.v2"
-	"gopkg.in/urfave/cli.v2/altsrc"
+	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 )
 
 // InsecureSSLFLag allows to ignore certificate trust errors (eg for self-signed certificate)

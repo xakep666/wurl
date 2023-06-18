@@ -15,11 +15,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/config"
 	"golang.org/x/net/proxy"
-	"gopkg.in/urfave/cli.v2"
-	"gopkg.in/urfave/cli.v2/altsrc"
 )
 
 func processHeadersFlag(values []string) (ret http.Header, err error) {
