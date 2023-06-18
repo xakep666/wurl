@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"gopkg.in/urfave/cli.v2"
+	"github.com/urfave/cli/v2"
 )
 
 const bashTemplateDef = `_<<.Context.App.Name>>_bash_autocomplete() {
@@ -41,7 +41,7 @@ var InitCompletionFlag = &cli.StringFlag{
 func createTemplateContext(ctx *cli.Context) map[string]interface{} {
 	ret := make(map[string]interface{})
 	ret["Program"] = os.Args[0]
-	ret["CompleteFlag"] = cli.GenerateCompletionFlag.Names()[0]
+	ret["CompleteFlag"] = cli.BashCompletionFlag.Names()[0]
 	ret["Context"] = ctx
 
 	return ret

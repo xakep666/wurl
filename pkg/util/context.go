@@ -1,11 +1,11 @@
 package util
 
 import (
+	"github.com/urfave/cli/v2"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/pkg/client/gorilla"
 	"github.com/xakep666/wurl/pkg/config"
-	"gopkg.in/urfave/cli.v2"
 )
 
 const (

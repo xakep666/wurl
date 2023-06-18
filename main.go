@@ -8,11 +8,11 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2/altsrc"
 	"github.com/xakep666/wurl/flags"
 	"github.com/xakep666/wurl/pkg/client"
 	"github.com/xakep666/wurl/pkg/util"
-	"gopkg.in/urfave/cli.v2"
-	"gopkg.in/urfave/cli.v2/altsrc"
 )
 
 var Version = "0.0.2-alpha"
